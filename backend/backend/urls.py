@@ -17,9 +17,10 @@ Including another URLconf
 """
 
 from django.contrib import admin  # Import the admin site
-from django.urls import path  # Import the path function for URL routing
+from django.urls import path, include  # Import the path function for URL routing
 from signup.views import RegisterView  # Import the view for user registration
-from login.views import LoginView, Dashboard  # Import the views for login and dashboard
+from login.views import LoginView
+from dashboard.views import Dashboard  # Import the views for login and dashboard
 from rest_framework_simplejwt.views import (  # Import JWT views for token management
     TokenObtainPairView,
     TokenRefreshView,
@@ -28,9 +29,10 @@ from rest_framework_simplejwt.views import (  # Import JWT views for token manag
 # Define the URL patterns for the project
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin site URL
-    path('api/dashboard/', Dashboard.as_view(), name='dashboard'),  # Dashboard view for authenticated users
+    path('api/dashboard/', include('dashboard.urls')),  # Include the dashboard app's URLs  # Dashboard view for authenticated users
     path('api/login/', LoginView.as_view(), name='login'),  # Login view for user authentication
     path('api/signup/', RegisterView.as_view(), name='signup'),  # Signup view for user registration
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Obtain JWT access and refresh tokens
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh JWT access token
+    path('api/logout/', include('logout.urls')),  # Logout app URLs
 ]

@@ -9,6 +9,7 @@ from django.http import HttpResponse  # For basic HTTP responses (not used in th
 from rest_framework.views import APIView  # For creating custom API views
 from rest_framework.permissions import IsAuthenticated  # For enforcing authentication on views
 from django.shortcuts import redirect  # For redirecting users (not used in this file)
+from rest_framework_simplejwt.authentication import JWTAuthentication  # Import JWT authentication
 
 # Create your views here.
 
@@ -33,23 +34,15 @@ class LoginView(generics.GenericAPIView):
         if user is not None:
             # If authentication is successful, generate JWT tokens
             refresh = RefreshToken.for_user(user)  # Generate refresh and access tokens
+            access_token = str(refresh.access_token)  # Extract the access token
             user_serializer = UserSerializer(user)  # Serialize user data
-            return Response({
-                'refresh': str(refresh),  # Return the refresh token
-                'access': str(refresh.access_token),  # Return the access token
-                'user': user_serializer.data  # Return serialized user data
-            })
+
+            # Redirect to the new dashboard URL with the token in the query parameters
+            dashboard_url = f"/api/dashboard/?token={access_token}"
+            return redirect(dashboard_url)
         else:
             # If authentication fails, return an error response
             return Response({'error': 'Invalid credentials'}, status=400)
 
-# Dashboard view for authenticated users
-class Dashboard(APIView):
-    # Enforce authentication for this view
-    permission_classes = [IsAuthenticated]
 
-    # Handle GET requests to display the dashboard
-    def get(self, request):
-        user = request.user  # Get the authenticated user
-        user_serializer = UserSerializer(user)  # Serialize user data
-        return Response({'message': f'Welcome to the dashboard, {request.user.first_name}!'})
+
